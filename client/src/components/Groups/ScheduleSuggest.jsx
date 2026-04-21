@@ -8,19 +8,18 @@ const ScheduleSuggest = ({ groupId }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const loadSuggestion = async () => {
+      try {
+        const data = await api.groups.suggest(groupId);
+        setSuggestion(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
     loadSuggestion();
   }, [groupId]);
-
-  const loadSuggestion = async () => {
-    try {
-      const data = await api.groups.suggest(groupId);
-      setSuggestion(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) return <div className="p-4">Loading...</div>;
 

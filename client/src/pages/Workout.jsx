@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 
@@ -16,11 +16,7 @@ const Workout = () => {
     sets: '3',
   });
 
-  useEffect(() => {
-    fetchData();
-  }, [date]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const [workoutsData, prsData] = await Promise.all([
@@ -34,7 +30,11 @@ const Workout = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [date]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

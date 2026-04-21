@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 
@@ -14,11 +14,7 @@ const Sleep = () => {
     quality: 'good',
   });
 
-  useEffect(() => {
-    fetchData();
-  }, [date]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const [sleepData, statsData] = await Promise.all([
@@ -32,7 +28,11 @@ const Sleep = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [date]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

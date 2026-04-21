@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -14,11 +14,7 @@ const Groups = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
 
-  useEffect(() => {
-    loadGroups();
-  }, []);
-
-  const loadGroups = async () => {
+  const loadGroups = useCallback(async () => {
     try {
       const data = await api.groups.getAll();
       setGroups(data);
@@ -27,7 +23,11 @@ const Groups = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadGroups();
+  }, [loadGroups]);
 
   const handleLogout = async () => {
     await logout();

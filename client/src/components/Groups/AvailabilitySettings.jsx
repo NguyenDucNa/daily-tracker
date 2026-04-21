@@ -9,23 +9,22 @@ const AvailabilitySettings = () => {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    const loadAvailability = async () => {
+      try {
+        const data = await api.availability.get();
+        const availMap = {};
+        data.forEach(a => {
+          availMap[a.dayOfWeek] = a.timeSlots || [];
+        });
+        setAvailability(availMap);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
     loadAvailability();
   }, []);
-
-  const loadAvailability = async () => {
-    try {
-      const data = await api.availability.get();
-      const availMap = {};
-      data.forEach(a => {
-        availMap[a.dayOfWeek] = a.timeSlots || [];
-      });
-      setAvailability(availMap);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSlotChange = (day, index, field, value) => {
     setAvailability(prev => {

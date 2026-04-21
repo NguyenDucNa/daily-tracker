@@ -10,27 +10,26 @@ const Progress = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchAllData = async () => {
+      setLoading(true);
+      try {
+        const [foods, workouts, sleep] = await Promise.all([
+          api.foods.get(new Date().toISOString().split('T')[0]),
+          api.workouts.getAll(),
+          api.sleep.getStats(),
+        ]);
+        
+        setFoodData(foods);
+        setWorkoutData(workouts);
+        setSleepStats(sleep);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchAllData();
   }, []);
-
-  const fetchAllData = async () => {
-    setLoading(true);
-    try {
-      const [foods, workouts, sleep] = await Promise.all([
-        api.foods.get(new Date().toISOString().split('T')[0]),
-        api.workouts.getAll(),
-        api.sleep.getStats(),
-      ]);
-      
-      setFoodData(foods);
-      setWorkoutData(workouts);
-      setSleepStats(sleep);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getLast7DaysFood = () => {
     const days = [];

@@ -39,6 +39,7 @@ router.post('/', async (req, res) => {
           joinedAt: now,
         }
       ],
+      memberUids: [userId],
       createdBy: userId,
       createdAt: now,
       updatedAt: now,
@@ -62,7 +63,7 @@ router.get('/', async (req, res) => {
 
   try {
     const snapshot = await db.collection('groups')
-      .where('members', 'array-contains', { uid: userId })
+      .where('memberUids', 'array-contains', userId)
       .get();
 
     const groups = snapshot.docs.map(doc => ({
@@ -187,6 +188,7 @@ router.post('/join', async (req, res) => {
 
     await doc.ref.update({
       members: newMembers,
+      memberUids: [...(data.memberUids || []), userId],
       updatedAt: new Date(),
     });
 
@@ -214,12 +216,14 @@ router.post('/:id/leave', async (req, res) => {
 
     const data = doc.data();
     const newMembers = data.members?.filter(m => m.uid !== userId);
+    const newMemberUids = data.memberUids?.filter(uid => uid !== userId) || [];
 
     if (newMembers?.length === 0) {
       await doc.ref.delete();
     } else {
       await doc.ref.update({
         members: newMembers,
+        memberUids: newMemberUids,
         updatedAt: new Date(),
       });
     }

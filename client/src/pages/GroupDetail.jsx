@@ -15,20 +15,19 @@ const GroupDetail = () => {
   const [activeTab, setActiveTab] = useState('schedule');
 
   useEffect(() => {
+    const loadGroup = async () => {
+      try {
+        const data = await api.groups.get(id);
+        setGroup(data);
+      } catch (err) {
+        console.error('Error fetching group:', err);
+        navigate('/groups');
+      } finally {
+        setLoading(false);
+      }
+    };
     loadGroup();
-  }, [id]);
-
-  const loadGroup = async () => {
-    try {
-      const data = await api.groups.get(id);
-      setGroup(data);
-    } catch (err) {
-      console.error('Error fetching group:', err);
-      navigate('/groups');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [id, navigate]);
 
   const isAdmin = () => {
     const member = group?.members?.find(m => m.uid === user?.uid);

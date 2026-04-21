@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 
@@ -16,11 +16,7 @@ const Food = () => {
     mealType: 'breakfast',
   });
 
-  useEffect(() => {
-    fetchFoods();
-  }, [date]);
-
-  const fetchFoods = async () => {
+  const fetchFoods = useCallback(async () => {
     setLoading(true);
     try {
       const data = await api.foods.get(date);
@@ -30,7 +26,11 @@ const Food = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [date]);
+
+  useEffect(() => {
+    fetchFoods();
+  }, [fetchFoods]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
