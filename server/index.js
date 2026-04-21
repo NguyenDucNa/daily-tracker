@@ -11,12 +11,11 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // CORS configuration for production
-// NOTE: Update with your actual Render Static Site URL after deploy
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production'
     ? [
-        'https://daily-tracker-frontend.onrender.com',
-        // Add other Render preview URLs if needed
+        'https://daily-tracker-fe.onrender.com',
+        'https://daily-tracker-jvmk.onrender.com',
       ]
     : 'http://localhost:5173',
   credentials: true,
