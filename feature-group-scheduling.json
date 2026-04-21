@@ -1,0 +1,212 @@
+{
+  "feature": "Group Workout Scheduling",
+  "description": "Cho phép 5 user tạo nhóm, set availability, và suggest lịch tập chung (thời điểm TẤT CẢ đều rảnh)",
+  "version": "1.0.0",
+
+  "phase_1_data_model": {
+    "firestore_collections": {
+      "groups": {
+        "path": "groups/{groupId}",
+        "fields": {
+          "id": "string (auto-generated)",
+          "name": "string - vd: 'Team Gym T7'",
+          "inviteCode": "string - 6 ký tự uppercase, vd: 'ABC123'",
+          "members": [
+            {
+              "uid": "string (Firebase UID)",
+              "displayName": "string",
+              "role": "enum: admin | member",
+              "joinedAt": "timestamp"
+            }
+          ],
+          "createdBy": "string (Firebase UID)",
+          "createdAt": "timestamp",
+          "updatedAt": "timestamp"
+        }
+      },
+      "availability": {
+        "path": "users/{userId}/availability/{dayOfWeek}",
+        "fields": {
+          "dayOfWeek": "number (0=CN, 1=T2, ..., 6=T7)",
+          "timeSlots": [
+            { "start": "string (HH:mm - 06:00)", "end": "string (HH:mm - 08:00)" }
+          ],
+          "updatedAt": "timestamp"
+        }
+      }
+    }
+  },
+
+  "phase_2_backend": {
+    "routes_groups": {
+      "path": "server/routes/groups.js",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/groups",
+          "description": "Tạo group mới",
+          "auth": true,
+          "request_body": { "name": "string" },
+          "response": { "id": "string", "inviteCode": "string", "members": "array" }
+        },
+        {
+          "method": "GET",
+          "path": "/api/groups",
+          "description": "List groups của user",
+          "auth": true,
+          "response": "array of groups"
+        },
+        {
+          "method": "GET",
+          "path": "/api/groups/:id",
+          "description": "Get chi tiết group",
+          "auth": true,
+          "response": "group object with members"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/groups/:id",
+          "description": "Update group (chỉ admin)",
+          "auth": true,
+          "request_body": { "name": "string" }
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/groups/:id",
+          "description": "Delete group (chỉ admin)",
+          "auth": true
+        },
+        {
+          "method": "POST",
+          "path": "/api/groups/join",
+          "description": "Join bằng inviteCode",
+          "auth": true,
+          "request_body": { "inviteCode": "string" }
+        },
+        {
+          "method": "POST",
+          "path": "/api/groups/:id/leave",
+          "description": "Rời group",
+          "auth": true
+        },
+        {
+          "method": "GET",
+          "path": "/api/groups/:id/suggest",
+          "description": "Suggest lịch tập chung cho group",
+          "auth": true,
+          "response": {
+            "suggestedSlots": ["array of {dayOfWeek, start, end}"],
+            "confidence": "high | medium | low"
+          }
+        }
+      ]
+    },
+    "routes_availability": {
+      "path": "server/routes/availability.js",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/api/availability",
+          "description": "Get availability của user",
+          "auth": true,
+          "response": "array of {dayOfWeek, timeSlots}"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/availability",
+          "description": "Set availability",
+          "auth": true,
+          "request_body": {
+            "availability": [
+              { "dayOfWeek": 1, "timeSlots": [{ "start": "06:00", "end": "08:00" }] }
+            ]
+          }
+        }
+      ]
+    },
+    "suggest_algorithm": {
+      "description": "Logic suggest lịch chung",
+      "steps": [
+        "1. Lấy tất cả members của group",
+        "2. Lấy availability (user-set) của mỗi member",
+        "3. Infer từ workout/sleep patterns: giờ không có activity = rảnh",
+        "4. Intersect tất cả time slots → chỉ lấy giờ TẤT CẢ đều rảnh",
+        "5. Return suggestedSlots với confidence score"
+      ],
+      "confidence_levels": {
+        "high": "Tất cả members đều set availability thủ công",
+        "medium": "Kết hợp user-set và inferred",
+        "low": "Chỉ inferred từ activity patterns"
+      }
+    }
+  },
+
+  "phase_3_frontend": {
+    "components": {
+      "path": "client/src/components/Groups/",
+      "files": [
+        {
+          "name": "GroupCard.jsx",
+          "description": "Card hiển thị 1 group trong list"
+        },
+        {
+          "name": "CreateGroupModal.jsx",
+          "description": "Modal tạo group mới, tự động tạo inviteCode"
+        },
+        {
+          "name": "JoinGroupModal.jsx",
+          "description": "Modal nhập inviteCode để join group"
+        },
+        {
+          "name": "MemberList.jsx",
+          "description": "Danh sách thành viên trong group"
+        },
+        {
+          "name": "AvailabilitySettings.jsx",
+          "description": "Component set khung giờ rảnh theo ngày"
+        },
+        {
+          "name": "ScheduleSuggest.jsx",
+          "description": "Hiển thị kết quả suggest lịch"
+        }
+      ]
+    },
+    "pages": [
+      {
+        "path": "client/src/pages/Groups.jsx",
+        "description": "List groups đã tham gia, button tạo/join group"
+      },
+      {
+        "path": "client/src/pages/GroupDetail.jsx",
+        "description": "Chi tiết group: thông tin, members, tab Availability/Schedule/Settings"
+      }
+    ],
+    "api_integration": {
+      "add_to": "client/src/services/api.js",
+      "functions": [
+        "createGroup(name)",
+        "getGroups()",
+        "getGroup(id)",
+        "updateGroup(id, data)",
+        "deleteGroup(id)",
+        "joinGroup(inviteCode)",
+        "leaveGroup(id)",
+        "suggestSchedule(id)",
+        "getAvailability()",
+        "setAvailability(availability)"
+      ]
+    }
+  },
+
+  "implementation_order": [
+    "1. Tạo server/routes/groups.js - CRUD groups + suggest",
+    "2. Tạo server/routes/availability.js - CRUD availability",
+    "3. Update server/index.js - register routes mới",
+    "4. Update client/src/services/api.js - thêm API functions",
+    "5. Tạo client/src/components/Groups/*.jsx",
+    "6. Tạo client/src/pages/Groups.jsx",
+    "7. Tạo client/src/pages/GroupDetail.jsx",
+    "8. Update client/src/App.jsx - thêm routes",
+    "9. Test với 5 user"
+  ]
+}
