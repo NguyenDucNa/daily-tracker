@@ -16,6 +16,16 @@
 
 ---
 
+## 🔧 Post-Deploy Fixes (April 21, 2026)
+
+### Fixes Applied
+- **Client**: Fixed ESLint `react-hooks/immutability` errors in 9 files
+- **Client**: Fixed `react-refresh/only-export-components` warning in AuthContext.jsx
+- **Server**: Fixed Firestore `array-contains` query bug in `groups.js` (added `memberUids` field)
+- **Status**: All fixes committed and pushed to `main`
+
+---
+
 ## 🌐 Live URLs
 
 | Service | Platform | URL | Status |
