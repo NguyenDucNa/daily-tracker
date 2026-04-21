@@ -115,6 +115,13 @@ const Dashboard = () => {
               )}
             </div>
           </Link>
+
+          <Link to="/groups" className="block">
+            <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition">
+              <h3 className="text-lg font-semibold mb-2">👥 Groups</h3>
+              <p className="text-gray-500">Find workout buddies</p>
+            </div>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

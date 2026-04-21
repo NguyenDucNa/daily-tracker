@@ -6,6 +6,8 @@ import Food from './pages/Food';
 import Workout from './pages/Workout';
 import Sleep from './pages/Sleep';
 import Progress from './pages/Progress';
+import Groups from './pages/Groups';
+import GroupDetail from './pages/GroupDetail';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -66,6 +68,22 @@ function App() {
         element={
           <ProtectedRoute>
             <Progress />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/groups"
+        element={
+          <ProtectedRoute>
+            <Groups />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/groups/:id"
+        element={
+          <ProtectedRoute>
+            <GroupDetail />
           </ProtectedRoute>
         }
       />

@@ -25,7 +25,8 @@
         }
       },
       "availability": {
-        "path": "users/{userId}/availability/{dayOfWeek}",
+        "path": "users/{uid}/availability/{dayOfWeek}",
+        "note": "Dùng subcollection pattern giống foods, workouts, sleep",
         "fields": {
           "dayOfWeek": "number (0=CN, 1=T2, ..., 6=T7)",
           "timeSlots": [
@@ -44,10 +45,11 @@
         {
           "method": "POST",
           "path": "/api/groups",
-          "description": "Tạo group mới",
+          "description": "Tạo group mới - creator tự động là admin",
           "auth": true,
           "request_body": { "name": "string" },
-          "response": { "id": "string", "inviteCode": "string", "members": "array" }
+          "response": { "id": "string", "inviteCode": "string", "members": "array" },
+          "notes": "Creator được auto-add vào members với role: admin"
         },
         {
           "method": "GET",
@@ -133,6 +135,25 @@
         "4. Intersect tất cả time slots → chỉ lấy giờ TẤT CẢ đều rảnh",
         "5. Return suggestedSlots với confidence score"
       ],
+      "data_sources": {
+        "user_set_availability": {
+          "collection": "users/{uid}/availability/{dayOfWeek}",
+          "priority": "high",
+          "note": "User tự set, ưu tiên cao nhất"
+        },
+        "workout_patterns": {
+          "collection": "users/{uid}/workouts",
+          "query": "7 ngày gần nhất",
+          "logic": "Ngày nào có workout > 30p → busy giờ logged",
+          "priority": "medium"
+        },
+        "sleep_patterns": {
+          "collection": "users/{uid}/sleep",
+          "query": "7 ngày gần nhất",
+          "logic": "bedtime → wakeTime = busy (thường là đêm)",
+          "priority": "medium"
+        }
+      },
       "confidence_levels": {
         "high": "Tất cả members đều set availability thủ công",
         "medium": "Kết hợp user-set và inferred",
