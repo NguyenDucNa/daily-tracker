@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# 🚀 Daily Tracker Deployment Script
-# 
+# 🚀 Daily Tracker Deployment Script (Render-only)
+#
 # HƯỚNG DẪN SỬ DỤNG:
 # 1. Chạy script này để kiểm tra code trước khi deploy
 # 2. Làm theo các bước manual trong DEPLOY.md
-# 
+#
 # Usage: ./deploy-check.sh
 
 echo "=========================================="
@@ -35,7 +35,6 @@ echo "🔧 Kiểm tra file cấu hình..."
 
 files_to_check=(
     "client/vercel.json"
-    "client/.env.production"
     "server/.env.production"
     "DEPLOY.md"
 )
@@ -83,6 +82,22 @@ if [ -f "client/.env" ]; then
     echo "   ⚠️  client/.env tồn tại (không nên commit)"
 fi
 
+# Kiểm tra client build
+echo ""
+echo "🔨 Kiểm tra Client Build..."
+cd client
+if npm run lint > /dev/null 2>&1; then
+    echo "   ✅ ESLint pass"
+else
+    echo "   ❌ ESLint có lỗi, chạy: cd client && npm run lint"
+fi
+if npm run build > /dev/null 2>&1; then
+    echo "   ✅ Build thành công"
+else
+    echo "   ❌ Build thất bại, chạy: cd client && npm run build"
+fi
+cd ..
+
 # Kiểm tra git status
 echo ""
 echo "📊 Git Status..."
@@ -93,7 +108,9 @@ echo "=========================================="
 echo "✅ Kiểm tra hoàn tất!"
 echo ""
 echo "📋 Bước tiếp theo:"
-echo "   1. Điền thông tin Firebase vào .env.production files"
-echo "   2. Commit & push code: git add . && git commit -m 'Prepare for deploy' && git push"
+echo "   1. Đảm bảo code đã push lên GitHub"
+echo "   2. Deploy frontend lên Render (Static Site)"
 echo "   3. Làm theo hướng dẫn trong DEPLOY.md"
+echo ""
+echo "💰 Chi phí: 0 USD/tháng (Free tier)"
 echo "=========================================="
